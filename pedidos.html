@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão de Fornecedores</title>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+
+ 
+/* ========== VARIÁVEIS GLOBAIS ========== */
+:root {
+  /* Tema Claro */
+  --bg-light: #F9FAFB;
+  --text-light: #1F2937;
+  --card-light: #FFFFFF;
+  --border-light: #E5E7EB;
+
+  /* Tema Escuro */
+  --bg-dark: #111827;
+  --text-dark: #F9FAFB;
+  --card-dark: #1F2937;
+  --border-dark: #374151;
+
+  /* Cores principais */
+  --primary-color: #028090;
+  --primary-hover: #026873;
+  --success-color: #10B981;
+  --warning-color: #F59E0B;
+  --danger-color: #EF4444;
+}
+
+
+/* ========== ESTILOS GERAIS ========== */
+body {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+  font-family: 'Segoe UI', sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+nav {
+  background-color: #D4AF37;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #1F2937;
+}
+
+#content {
+  margin: auto;
+  max-width: 1200px;
+  padding: 2rem 1rem;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.btn .material-symbols-outlined {
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.btn {
+  background-color: #D4AF37;
+  color: #FFFFF;
+}
+
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+}
+
+.form-label.required::after {
+  content: '*';
+  color: red;
+  margin-left: 4px;
+}
+
+
+/* ========== BOTÃO DE ALTERNÂNCIA DE TEMA ========== */
+.theme-toggle {
+  position: fixed;
+  top: 90%;
+  right: 15px;
+  z-index: 9999;
+}
+
+.theme-toggle .btn {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+/* ========== ESTILOS DO TEMA ESCURO ========== */
+.dark-mode body,
+.dark-mode .table-responsive {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+.dark-mode nav {
+  background-color: #B8860B;
+}
+
+.dark-mode .btn {
+  background-color: #B8860B;
+  color: #FFFFF;
+}
+
+.dark-mode .table-dark-mode th,
+.dark-mode .table-dark-mode td {
+  background-color: var(--card-dark);
+  color: var(--text-dark);
+}
+
+.dark-mode .btn-dark-mode {
+  background-color: #6c757d;
+  color: white;
+}
+
+.dark-mode .btn-dark-mode:hover {
+  background-color: #495057;
+}
+
+.dark-mode .modal-content {
+  background-color: var(--card-dark);
+  color: var(--text-dark);
+}
+
+.dark-mode .modal-header,
+.dark-mode .modal-body {
+  border-color: var(--border-dark);
+}
+
+.dark-mode .form-control {
+  background-color: #1e293b;
+  color: var(--text-dark);
+  border: 1px solid var(--border-dark);
+}
+
+.dark-mode .form-control::placeholder {
+  color: #9CA3AF;
+}
+
+.dark-mode .form-label {
+  color: var(--text-dark);
+}
+
+.dark-mode .btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-hover);
+}
+
+.dark-mode .table {
+  color: var(--text-dark);
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+  background-color: #1e1e1e;
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(even) {
+  background-color: #2c2c2c;
+}
+
+.dark-mode .btn-warning {
+  background-color: var(--warning-color);
+  color: #000;
+  border: none;
+}
+
+.dark-mode .btn-danger {
+  background-color: var(--danger-color);
+  color: #fff;
+  border: none;
+}
+
+.dark-mode .dark-mode-cell {
+  background-color: #2c2c2c;
+  color: var(--text-dark);
+}
+
+.dark-mode .btn-dark-mode {
+  background-color: #6c757d;
+  color: white;
+}
+
+.dark-mode .btn-dark-mode:hover {
+  background-color: #495057;
+}
+
+
+/* Visibilidade e contraste em ambos os temas */
+.text-visible {
+  color: #4B5563;
+}
+
+.dark-mode .text-visible {
+  color: #D1D5DB;
+}
+
+  </style>
+</head>
+<body>
+
+<div class="theme-toggle">
+  <button class="btn" id="btnToggleTheme">
+    <span class="material-icons" id="iconeTema">dark_mode</span>
+  </button>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark px-3">
+  <div class="container-fluid">
+    <button id="btn-voltar" class="btn btn-outline-light me-3" onclick="window.history.back();">
+      <span class="material-symbols-outlined me-1">arrow_back</span> Voltar
+    </button>
+    <span class="navbar-brand mb-0 h1">Gestão de Fornecedores</span>
+  </div>
+</nav>
+
+<main id="content">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold">Fornecedores</h2>
+    <button class="btn btn-success d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#modalFornecedor">
+      <span class="material-symbols-outlined me-1">add</span> Novo Fornecedor
+    </button>
+  </div>
+
+  <input type="text" id="filtro" class="form-control mb-4" placeholder="Filtrar por nome, categoria, CPF/CNPJ ou telefone">
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>CPF/CNPJ</th>
+            <th>Telefone</th>
+            <th>Email</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="listaFornecedores"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- Modais e Toast -->
+<!-- Modal Fornecedor -->
+<div class="modal fade" id="modalFornecedor" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <form class="modal-content" id="formFornecedor">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Adicionar / Editar Fornecedor</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <input type="hidden" id="idFornecedor">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label required">Nome</label>
+            <input type="text" id="nome" class="form-control" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label required">Categoria</label>
+            <input type="text" id="categoria" class="form-control" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label required">CPF ou CNPJ</label>
+            <input type="text" id="cpfCnpj" class="form-control" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label required">Telefone</label>
+            <input type="tel" id="telefone" class="form-control" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Endereço</label>
+            <input type="text" id="endereco" class="form-control" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer px-4 py-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-success">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Pedidos -->
+<div class="modal fade" id="modalPedidos" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">Histórico de Pedidos</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0">Pedidos Anteriores</h6>
+          <button class="btn btn-sm btn-success d-flex align-items-center" id="btnAbrirNovoPedido">
+            <span class="material-symbols-outlined me-1">add</span> Novo Pedido
+          </button>
+        </div>
+        <ul class="list-group" id="listaPedidos"></ul>
+      </div>
+      <div class="modal-footer px-4 py-3">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Novo Pedido -->
+<div class="modal fade" id="modalNovoPedido" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Novo Pedido</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <form id="formPedido" class="row g-3">
+          <input type="hidden" id="idFornecedorPedido">
+          <div class="col-md-5">
+            <label class="form-label">Produto</label>
+            <input type="text" id="pedidoProduto" class="form-control" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Valor (R$)</label>
+            <input type="text" id="pedidoValor" class="form-control" min="0" step="0.01" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Observações</label>
+            <input type="text" id="pedidoObs" class="form-control">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer px-4 py-3">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button id="btnSalvarPedido" class="btn btn-success">Salvar Pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container">
+  <div id="toast" class="toast align-items-center bg-success text-white border-0 fade" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Sucesso!</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, push, onValue, set, remove, update, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+  // Configuração do Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHVTY81_-m3ct_Yx7B9L4JyMxCFSH0isg",
+    authDomain: "pagina-de-avaliacao.firebaseapp.com",
+    databaseURL: "https://pagina-de-avaliacao-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "pagina-de-avaliacao",
+    storageBucket: "pagina-de-avaliacao.appspot.com",
+    messagingSenderId: "533323669910",
+    appId: "1:533323669910:web:4442513a47be857f097db7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Referência para a lista de fornecedores e pedidos
+  const listaFornecedores = document.getElementById("listaFornecedores");
+  const listaPedidos = document.getElementById("listaPedidos");
+
+  // Função para exibir o toast
+  const showToast = (msg) => {
+    document.getElementById("toastMsg").innerText = msg;
+    const toast = new bootstrap.Toast(document.getElementById("toast"), { delay: 3000 });
+    toast.show();
+  };
+
+  // Função de validação de CPF ou CNPJ
+  const validarCPFouCNPJ = (valor) => {
+    const limpar = valor.replace(/\D/g, '');
+    if (limpar.length === 11) {
+      let soma = 0;
+      for (let i = 0; i < 9; i++) soma += parseInt(limpar[i]) * (10 - i);
+      let resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+      if (resto !== parseInt(limpar[9])) return false;
+      soma = 0;
+      for (let i = 0; i < 10; i++) soma += parseInt(limpar[i]) * (11 - i);
+      resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+      return resto === parseInt(limpar[10]);
+    }
+    if (limpar.length === 14) {
+      let tamanho = limpar.length - 2;
+      let numeros = limpar.substring(0, tamanho);
+      let digitos = limpar.substring(tamanho);
+      let soma = 0, pos = tamanho - 7;
+      for (let i = tamanho; i >= 1; i--) {
+        soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+        if (pos < 2) pos = 9;
+      }
+      let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+      if (resultado !== parseInt(digitos.charAt(0))) return false;
+      tamanho++;
+      numeros = limpar.substring(0, tamanho);
+      soma = 0;
+      pos = tamanho - 7;
+      for (let i = tamanho; i >= 1; i--) {
+        soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+        if (pos < 2) pos = 9;
+      }
+      resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+      return resultado === parseInt(digitos.charAt(1));
+    }
+    return false;
+  };
+
+// Função para carregar a lista de fornecedores
+// Função para carregar a lista de fornecedores
+const carregarFornecedores = () => {
+  onValue(ref(db, "fornecedores"), (snapshot) => {
+    listaFornecedores.innerHTML = ""; // Limpar a lista antes de carregar
+    const fornecedores = snapshot.val();
+    if (fornecedores) {
+      Object.keys(fornecedores).forEach((id) => {
+        const fornecedor = fornecedores[id];
+        const row = document.createElement("tr");
+        
+        // Usando a classe para garantir visibilidade em ambos os modos
+        const textClass = document.documentElement.classList.contains('dark-mode') ? 'text-visible' : 'text-visible';
+        
+        row.innerHTML = `
+          <td class="${textClass} dark-mode-cell">${fornecedor.nome}</td>
+          <td class="${textClass} dark-mode-cell">${fornecedor.categoria}</td>
+          <td class="${textClass} dark-mode-cell">${fornecedor.cpfCnpj}</td>
+          <td class="${textClass} dark-mode-cell">${fornecedor.telefone}</td>
+          <td class="${textClass} dark-mode-cell">${fornecedor.email || "N/A"}</td>
+          <td class="${textClass} dark-mode-cell">
+            <button class="btn btn-warning btn-sm ${document.documentElement.classList.contains('dark-mode') ? 'btn-dark-mode' : ''}" onclick="editarFornecedor('${id}')">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="btn btn-danger btn-sm ${document.documentElement.classList.contains('dark-mode') ? 'btn-dark-mode' : ''}" onclick="removerFornecedor('${id}')">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+            <button class="btn btn-info btn-sm ${document.documentElement.classList.contains('dark-mode') ? 'btn-dark-mode' : ''}" onclick="abrirModalPedidos('${id}', '${fornecedor.telefone}')">
+              <span class="material-symbols-outlined">history</span>
+            </button>
+          </td>
+        `;
+        // Adicionar a linha à tabela
+        listaFornecedores.appendChild(row);
+      });
+    }
+  });
+};
+
+  // Função para editar fornecedor
+  window.editarFornecedor = (id) => {
+    get(ref(db, `fornecedores/${id}`)).then((snapshot) => {
+      const fornecedor = snapshot.val();
+      document.getElementById("idFornecedor").value = id;
+      document.getElementById("nome").value = fornecedor.nome;
+      document.getElementById("categoria").value = fornecedor.categoria;
+      document.getElementById("cpfCnpj").value = fornecedor.cpfCnpj;
+      document.getElementById("telefone").value = fornecedor.telefone;
+      document.getElementById("email").value = fornecedor.email;
+      document.getElementById("endereco").value = fornecedor.endereco;
+
+      const modal = new bootstrap.Modal(document.getElementById("modalFornecedor"));
+      modal.show();
+    });
+  };
+
+  // Função para remover fornecedor
+  window.removerFornecedor = (id) => {
+    if (confirm("Você tem certeza que deseja remover este fornecedor?")) {
+      remove(ref(db, `fornecedores/${id}`))
+        .then(() => showToast("Fornecedor removido com sucesso!"))
+        .catch((error) => showToast("Erro ao remover fornecedor: " + error));
+    }
+  };
+
+
+
+  // Função para abrir o modal de pedidos
+  window.abrirModalPedidos = (idFornecedor, numeroFornecedor) => {
+    document.getElementById("idFornecedorPedido").value = idFornecedor;
+    get(ref(db, `fornecedores/${idFornecedor}/pedidos`)).then((snapshot) => {
+      listaPedidos.innerHTML = "";
+      const pedidos = snapshot.val();
+      if (pedidos) {
+        Object.keys(pedidos).forEach((id) => {
+          const pedido = pedidos[id];
+          const row = document.createElement("li");
+          row.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center", "border-0", "shadow-sm", "rounded-3", "mb-3");
+row.innerHTML = `
+  <div class="d-flex justify-content-between w-100">
+    <div class="d-flex flex-column">
+      <span class="fw-bold text-dark">Produto:</span>
+      <span class="text-muted">${pedido.produto}</span>
+      <span class="fw-bold text-dark mt-2">Valor:</span>
+      <span class="text-success">R$ ${parseFloat(pedido.valor).toFixed(2)}</span>
+      <span class="fw-bold text-dark mt-2">Observações:</span>
+      <span class="text-muted">${pedido.observacao || "Nenhuma observação"}</span>
+    </div>
+    <div class="d-flex align-items-center">
+      <button class="btn btn-outline-success btn-sm me-2 shadow-sm transition-all hover-zoom" onclick="enviarPedidoWhatsApp('${idFornecedor}', '${id}', ${numeroFornecedor})">
+        <span class="material-symbols-outlined">whatsapp</span> Enviar via WhatsApp
+      </button>
+      <button class="btn btn-outline-danger btn-sm shadow-sm transition-all hover-zoom" onclick="removerPedido('${idFornecedor}', '${id}')">
+        <span class="material-symbols-outlined">delete</span> Remover
+      </button>
+    </div>
+  </div>
+`;
+          listaPedidos.appendChild(row);
+        });
+      }
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById("modalPedidos"));
+    modal.show();
+  };
+
+// Função para remover fornecedor
+  window.removerPedido = (id, idpedido) => {
+    if (confirm("Você tem certeza que deseja remover este pedido?")) {
+      remove(ref(db, `fornecedores/${id}/pedidos/${idpedido}`))
+        .then(() => showToast("Pedido removido com sucesso!")
+)
+        .catch((error) => showToast("Erro ao remover fornecedor: " + error));
+    }
+  };
+
+ // Função para enviar pedido via WhatsApp
+window.enviarPedidoWhatsApp = (idFornecedor, idPedido, numeroFornecedor) => {
+
+  numeroFornecedor = String(numeroFornecedor).trim(); // Garante que seja string
+  
+  // Verifique se o número do fornecedor foi informado e tem tamanho mínimo
+  if (!numeroFornecedor || numeroFornecedor.length < 10) {
+    showToast('Número do fornecedor inválido!');
+    return;
+  }
+
+  get(ref(db, `fornecedores/${idFornecedor}/pedidos/${idPedido}`)).then((snapshot) => {
+    const pedido = snapshot.val();
+
+    if (pedido) {
+
+      const dataPedido = new Date().toLocaleDateString('pt-BR');
+const mensagem = `Olá!\n\nEstou entrando em contato para realizar um pedido no dia ${dataPedido}.\n\nDetalhes do pedido:\n• Produto: ${pedido.produto}\n• Valor: R$ ${parseFloat(pedido.valor).toFixed(2)}\n• Observações: ${pedido.observacao || "Nenhuma"}\n\nAguardo a confirmação. Obrigado!`;
+
+      let numeroFormatado = numeroFornecedor;
+
+      // Adiciona o 55 se o número tiver 10 ou 11 dígitos e ainda não começar com 55
+      if (numeroFormatado.length === 10 || numeroFormatado.length === 11) {
+        numeroFormatado = '55' + numeroFormatado;
+      } else {
+        showToast("Número já tem DDI ou tamanho diferente de 10/11: " + numeroFormatado);
+      }
+
+      if (numeroFormatado.length < 12) {
+        showToast('Número do fornecedor inválido após formatação!');
+        return;
+      }
+
+      const linkWhatsApp = `https://wa.me/${numeroFormatado}?text=${encodeURIComponent(mensagem)}`;
+
+      window.open(linkWhatsApp, '_blank');
+    } else {
+      showToast('Pedido não encontrado!');
+      console.error('Pedido não encontrado!');
+    }
+  }).catch((error) => {
+    showToast('Erro ao buscar pedido no Firebase: ' + error);
+    console.error('Erro ao buscar pedido no Firebase:', error);
+  });
+};
+
+  // Função para salvar novo fornecedor ou editar
+  document.getElementById("formFornecedor").addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const nome = document.getElementById("nome").value;
+    const categoria = document.getElementById("categoria").value;
+    const cpfCnpj = document.getElementById("cpfCnpj").value;
+    const telefone = document.getElementById("telefone").value;
+    const email = document.getElementById("email").value;
+    const endereco = document.getElementById("endereco").value;
+
+    if (!validarCPFouCNPJ(cpfCnpj)) {
+      showToast("CPF ou CNPJ inválido!");
+      return;
+    }
+
+    const fornecedor = { nome, categoria, cpfCnpj, telefone, email, endereco, data: new Date().toLocaleDateString("pt-BR")};
+    const idFornecedor = document.getElementById("idFornecedor").value;
+
+    if (idFornecedor) {
+      update(ref(db, `fornecedores/${idFornecedor}`), fornecedor)
+        .then(() => showToast("Fornecedor atualizado com sucesso!"))
+        .catch((error) => showToast("Erro ao atualizar fornecedor: " + error));
+    } else {
+      push(ref(db, 'fornecedores'), fornecedor)
+        .then(() => showToast("Fornecedor adicionado com sucesso!"))
+        .catch((error) => showToast("Erro ao adicionar fornecedor: " + error));
+    }
+
+    document.getElementById("formFornecedor").reset();
+    const modal = bootstrap.Modal.getInstance(document.getElementById("modalFornecedor"));
+    modal.hide();
+  });
+
+// Inicializar o modal com o ID
+const modalAdicionarPedido = new bootstrap.Modal(document.getElementById('modalNovoPedido'));
+
+// Acionar o modal ao clicar no botão
+document.getElementById('btnAbrirNovoPedido').addEventListener('click', () => {
+  modalAdicionarPedido.show();
+});
+
+document.getElementById('btnSalvarPedido').addEventListener('click',function(event) {
+  // Previne o comportamento padrão do botão (no caso de ser um botão de tipo submit)
+  event.preventDefault();
+
+  // Coleta os valores do formulário
+  const produto = document.getElementById('pedidoProduto').value.trim();
+  const valor = parseFloat(document.getElementById('pedidoValor').value.trim().replace("R$", "").replace(",", "."));
+  const observacao = document.getElementById('pedidoObs').value.trim();
+  const idFornecedor = document.getElementById('idFornecedorPedido').value.trim();
+
+  // Validação de campos obrigatórios
+  if (!produto || !valor || isNaN(valor) || valor <= 0) {
+    showToast("Por favor, preencha todos os campos obrigatórios corretamente.");
+    return;
+  }
+
+  // Criação do objeto de pedido
+  const pedido = {
+    produto: produto,
+    valor: valor,
+    observacao: observacao,
+    data: new Date().toLocaleDateString("pt-BR")  // Data do pedido
+  };
+
+  // Salvar no Firebase
+  salvarPedidoNoFirebase(idFornecedor, pedido);
+});
+
+// Função para salvar o pedido no Firebase
+window.salvarPedidoNoFirebase = (idFornecedor, pedido) => {
+  // Referência para o caminho fornecedores/{idFornecedor}/pedidos no Firebase Realtime Database
+  const pedidosRef = ref(db, `fornecedores/${idFornecedor}/pedidos`);
+
+  // Adiciona o pedido no banco de dados
+  push(pedidosRef, pedido)
+    .then(() => {
+      // Sucesso no envio, exibe uma mensagem e fecha o modal
+      showToast("Pedido salvo com sucesso!");
+     bootstrap.Modal.getInstance(document.getElementById('modalNovoPedido')).hide();
+      limparFormulario(); // Limpar o formulário após o envio bem-sucedido
+    })
+    .catch((error) => {
+      // Em caso de erro
+      alert('Erro ao salvar o pedido:' + error);
+      showToast('Erro ao salvar o pedido. Tente novamente.' + error);
+    });
+};
+
+// Função para limpar o formulário após salvar
+function limparFormulario() {
+  document.getElementById('formPedido').reset();
+};
+
+ // Máscara para preços (formato R$ XX,XX)
+    document.getElementById("pedidoValor").addEventListener("input", formatarPreco);
+
+    function formatarPreco(event) {
+        let value = event.target.value.replace(/\D/g, ""); // Remove tudo que não for número
+        value = (value / 100).toFixed(2).replace(".", ","); // Converte para decimal com 2 casas
+        event.target.value = "R$ " + value;
+    };
+
+const toggleBtn = document.getElementById('btnToggleTheme');
+  const iconeTema = document.getElementById('iconeTema');
+
+  function aplicarTema() {
+    const darkModeAtivo = localStorage.getItem('darkMode') === 'true';
+
+    if (darkModeAtivo) {
+      document.documentElement.classList.add('dark-mode');
+      iconeTema.textContent = "light_mode";
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+      iconeTema.textContent = "dark_mode";
+    }
+  };
+
+  toggleBtn.addEventListener('click', () => {
+    const darkModeAtivo = document.documentElement.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', darkModeAtivo);
+    iconeTema.textContent = darkModeAtivo ? "light_mode" : "dark_mode";
+  });
+
+function verificarPermissao(bloqueados = []) {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+  if (!usuario) {
+    alert("Você precisa estar logado.");
+    window.location.href = "index.html";
+    return false;
+  }
+
+  if (bloqueados.includes(usuario.cargo)) {
+    alert("Acesso negado para seu cargo (" + usuario.cargo + ").");
+    window.location.href = "dashboard.html";
+    return false;
+  }
+
+  return true;
+}
+
+  aplicarTema();
+  // Carregar fornecedores ao carregar a página
+  carregarFornecedores();
+verificarPermissao(["Atendente", "Garçom", "Churrasqueiro", "Caixa"]);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

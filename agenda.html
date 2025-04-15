@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda e Escala de Funcionários</title>
+
+  <!-- Bootstrap & Material Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #FCF8F3;
+  color: #2c3e50;
+}
+
+h3 {
+  font-weight: 700;
+}
+
+.material-symbols-outlined {
+  font-size: 20px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.btn {
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+.btn:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+  background-color: #6200ee;
+  border-color: #6200ee;
+}
+
+.btn-secondary {
+  background-color: #03dac6;
+  border-color: #03dac6;
+  color: #000;
+}
+
+.day-column {
+  border: 1px solid #dee2e6;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.form-control, .form-select {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #6200ee;
+  box-shadow: 0 0 0 2px rgba(98, 0, 238, 0.2);
+}
+
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  background-color: #6200ee;
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.modal-title {
+  font-weight: 500;
+}
+
+/* DARK MODE */
+.dark-mode body{
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark-mode .btn-primary {
+  background-color: #bb86fc;
+  border-color: #bb86fc;
+  color: #000;
+}
+
+.dark-mode .btn-secondary {
+  background-color: #03dac6;
+  border-color: #03dac6;
+  color: #000;
+}
+
+.dark-mode .day-column {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select {
+  background-color: #1e1e1e;
+  border: 1px solid #555;
+  color: #e0e0e0;
+}
+
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+  border-color: #bb86fc;
+  box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.3);
+}
+
+.dark-mode .modal-content {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+}
+
+.dark-mode .modal-header {
+  background-color: #bb86fc;
+  color: #000;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 90%;
+  right: 15px;
+  z-index: 9999;
+}
+
+.theme-toggle .btn {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #028090;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .theme-toggle .btn {
+  background-color: #1E3A3A;
+  color: #F9FAFB;
+}
+
+.dark-mode .tablejs {
+  background-color: #1E3A3A;
+  color: #F9FAFB;
+}
+
+.dark-mode .tablehtml {
+  background-color: #111827;
+  color: #F9FAFB;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="container py-4">
+
+<div class="theme-toggle">
+  <button class="btn" id="btnToggleTheme">
+    <span class="material-icons" id="iconeTema">dark_mode</span>
+  </button>
+</div>
+
+   <div class="container-fluid mb-4">
+  <!-- Cabeçalho com botão Voltar e Título -->
+  <div class="row align-items-center gy-2">
+    <div class="col-12 col-md-auto">
+      <button class="btn btn-light w-100 w-md-auto" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </button>
+    </div>
+    <div class="col-12 col-md">
+      <h3 class="fw-bold text-center text-md-start mb-0">Agenda e Escala de Funcionários</h3>
+    </div>
+  </div>
+
+  <!-- Botões de ações -->
+  <div class="row mt-3 gy-2">
+    <div class="col-12 col-sm-6 col-md-auto">
+      <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#modalEscala">
+        <span class="material-symbols-outlined">schedule</span> Nova Escala
+      </button>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-auto">
+      <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modalAgenda">
+        <span class="material-symbols-outlined">event</span> Novo Agendamento
+      </button>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-auto">
+      <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#modalFiltro">
+        <span class="material-symbols-outlined">filter_alt</span> Filtrar
+      </button>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-auto">
+      <button class="btn btn-outline-secondary w-100" id="btnLimparFiltro" style="display: none;">
+        <span class="material-symbols-outlined">restart_alt</span> Desfazer Filtro
+      </button>
+    </div>
+  </div>
+</div>
+
+    <!-- Semana e Gráfico -->
+    <div class="row mb-4 mx-auto">
+      <div class="col-md-8" id="semanaView">
+        <!-- Conteúdo da semana aqui -->
+      </div>
+      <div class="col-md-4 bg-dark bgcolor-white p-2 text-white rounded-4 m-auto h-auto">
+       <h6>Grafico de Rendimento</h6>
+        <canvas id="graficoCarga"></canvas>
+      </div>
+    </div>
+
+    <!-- Modal Escala -->
+    <div class="modal fade" id="modalEscala" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <form id="formEscala">
+            <div class="modal-header">
+              <h5 class="modal-title">Nova Escala</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Funcionário</label>
+                <select id="funcionarioSelect" class="form-select" required></select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Data</label>
+                <input type="datetime-local" id="dataEscala" class="form-control" required />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Hora Entrada</label>
+                <input type="time" id="horaEntrada" class="form-control" required />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Hora Saída</label>
+                <input type="time" id="horaSaida" class="form-control" required />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success">
+                <span class="material-symbols-outlined">check</span> Salvar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+<!-- Modal Filtro -->
+<div class="modal fade" id="modalFiltro" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formFiltro">
+        <div class="modal-header">
+          <h5 class="modal-title">Filtrar Agenda e Escalas</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-12">
+            <label class="form-label">Funcionário</label>
+            <select id="filtroFuncionario" class="form-select">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">De</label>
+            <input type="datetime-local" id="filtroInicio" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Até</label>
+            <input type="datetime-local" id="filtroFim" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">
+            <span class="material-symbols-outlined">search</span> Aplicar Filtro
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+    <!-- Modal Agendamento -->
+    <div class="modal fade" id="modalAgenda" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <form id="formAgenda">
+            <div class="modal-header">
+              <h5 class="modal-title">Novo Agendamento</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Funcionário</label>
+                <select id="funcAgendaSelect" class="form-select" required></select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Data</label>
+                <input type="datetime-local" id="dataAgenda" class="form-control" required />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Horário</label>
+                <input type="time" id="horarioAgenda" class="form-control" required />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Descrição</label>
+                <textarea id="descricaoAgenda" class="form-control" rows="2" required></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">
+                <span class="material-symbols-outlined">save</span> Agendar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3 z-3">
+      <div id="toast" class="toast text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+          <div class="toast-body" id="toastMsg">Ação realizada com sucesso!</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>
+    </div>
+  </div> <!-- fim container -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import {
+    getDatabase, ref, push, onValue, set, remove, update, get
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHVTY81_-m3ct_Yx7B9L4JyMxCFSH0isg",
+    authDomain: "pagina-de-avaliacao.firebaseapp.com",
+    databaseURL: "https://pagina-de-avaliacao-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "pagina-de-avaliacao",
+    storageBucket: "pagina-de-avaliacao.appspot.com",
+    messagingSenderId: "533323669910",
+    appId: "1:533323669910:web:4442513a47be857f097db7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const funcionarioSelect = document.getElementById("funcionarioSelect");
+  const funcAgendaSelect = document.getElementById("funcAgendaSelect");
+  const semanaView = document.getElementById("semanaView");
+  const toast = new bootstrap.Toast(document.getElementById("toast"));
+  const toastMsg = document.getElementById("toastMsg");
+
+  const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const hoje = new Date();
+  const inicioSemana = new Date(hoje);
+  inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay());
+
+  let grafico;
+
+  // Conversão para Date, com segurança e sem riscos de fuso horário
+function parseDataBR(dataStr) {
+  const [dia, mes, ano] = dataStr.split("/");
+  return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+}
+
+// Exibição de data no formato Brasileiro
+function formatarDataBR(dataStrISO) {
+  const data = new Date(dataStrISO);  // cria o objeto Date a partir da string ISO
+  return data.toLocaleDateString("pt-BR");  // formato pt-BR
+}
+
+
+  function showToast(msg, type = "success") {
+    document.getElementById("toast").className = `toast text-white bg-${type} border-0`;
+    toastMsg.textContent = msg;
+    toast.show();
+  }
+
+  function carregarFuncionarios() {
+    const funcRef = ref(db, "funcionarios");
+    onValue(funcRef, (snapshot) => {
+      funcionarioSelect.innerHTML = '<option value="">Escolha um funcionário</option>';
+      funcAgendaSelect.innerHTML = '<option value="">Escolha um funcionário</option>';
+      const filtroFuncionario = document.getElementById("filtroFuncionario");
+      filtroFuncionario.innerHTML = '<option value="">Todos</option>';
+
+      const listaOriginal = snapshot.val() || {};
+      const listaFiltrada = filtrarPorUsuario(listaOriginal);
+      for (const key in listaFiltrada) {
+        const f = listaFiltrada[key];
+        const opt = `<option value="${key}">${f.nome}</option>`;
+        funcionarioSelect.innerHTML += opt;
+        funcAgendaSelect.innerHTML += opt;
+        filtroFuncionario.innerHTML += opt;
+      }
+    });
+  }
+
+  function filtrarPorUsuario(lista) {
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (!usuario || !usuario.cargo) {
+      showToast("Usuário não logado ou cargo indefinido.");
+      return {};
+    }
+
+    const cargosRestritos = ["Atendente", "Caixa", "Garçom"];
+    const isRestrito = cargosRestritos.includes(usuario.cargo);
+    const resultado = {};
+
+    for (const id in lista) {
+      const item = lista[id];
+      if (!item) continue;
+      const pertenceAoUsuario = item.
+id_funcionario === usuario.id || item.email === usuario.email;
+      if (!isRestrito || pertenceAoUsuario) {
+        resultado[id] = item;
+      }
+    }
+    return resultado;
+  }
+
+  function gerarSemana(filtroFuncionario = "", filtroInicio = "", filtroFim = "") {
+    semanaView.innerHTML = "";
+    const carga = {};
+    const datasParaMostrar = [];
+
+    const isFiltroDataValido = filtroInicio && filtroFim;
+    let dataFiltroInicio, dataFiltroFim;
+
+    if (isFiltroDataValido) {
+      dataFiltroInicio = parseDataBR(filtroInicio);
+      dataFiltroFim = parseDataBR(filtroFim);
+
+      for (let d = new Date(dataFiltroInicio); d <= dataFiltroFim; d.setDate(d.getDate() + 1)) {
+        const clone = new Date(d);
+        
+        const dataStr = formatarDataBR(d);
+        datasParaMostrar.push({ data: clone, dataStr });
+      }
+    } else {
+      for (let i = 0; i < 7; i++) {
+        const dia = new Date(inicioSemana);
+        dia.setDate(dia.getDate() + i);
+        const dataStr = formatarDataBR(dia);
+        datasParaMostrar.push({ data: dia, dataStr });
+      }
+    }
+
+    datasParaMostrar.forEach(({ data, dataStr }) => {
+      const coluna = document.createElement("div");
+      coluna.className = "tablejs col-md-3 mb-3 day-column";
+      coluna.innerHTML = `
+        <h6 class="fw-bold">${diasSemana[data.getDay()]}<br><small>${dataStr}</small></h6>
+        <div id="dia-${dataStr}"></div>
+      `;
+      semanaView.appendChild(coluna);
+      carga[dataStr] = 0;
+    });
+
+    const escalaRef = ref(db, "escala");
+    onValue(escalaRef, (snapshot) => {
+      const escalas = filtrarPorUsuario(snapshot.val() || {});
+
+      Object.entries(escalas).forEach(([key, escala]) => {
+        const dataEscala = parseDataBR(escala.data);
+        if (
+          (filtroFuncionario && escala.id_funcionario !== filtroFuncionario) ||
+          (isFiltroDataValido && (dataEscala < dataFiltroInicio || dataEscala > dataFiltroFim))
+        ) return;
+
+        const container = document.getElementById(`dia-${escala.data}`);
+        if (container) {
+          container.innerHTML += `
+            <div class="tablehtml rounded p-2 mb-2">
+              <h4>Escalas</h4>
+              <div><strong>${escala.funcionario}</strong></div>
+              <div>${escala.hora_entrada} - ${escala.hora_saida}</div>
+              <div class="text-end mt-1">
+                <button class="btn btn-sm btn-danger" onclick="excluirEscala('${key}')">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+          `;
+          carga[escala.data] = (carga[escala.data] || 0) + 1;
+        }
+      });
+
+      atualizarGrafico(carga);
+    });
+
+    const agendaRef = ref(db, "agendamentos");
+    onValue(agendaRef, (snapshot) => {
+      const agendamentos = filtrarPorUsuario(snapshot.val() || {});
+
+      Object.entries(agendamentos).forEach(([key, agendamento]) => {
+        const dataAgenda = parseDataBR(agendamento.data);
+        if (
+          (filtroFuncionario && agendamento.id_funcionario !== filtroFuncionario) ||
+          (isFiltroDataValido && (dataAgenda < dataFiltroInicio || dataAgenda > dataFiltroFim))
+        ) return;
+
+        const container = document.getElementById(`dia-${agendamento.data}`);
+        if (container) {
+          container.innerHTML += `
+            <div class="tablehtml  p-2 mb-2 bg-warning bg-opacity-25 rounded">
+              <h4>Agendamentos</h4>
+              <div><strong>${agendamento.funcionario}</strong></div>
+              <div>${agendamento.horario}</div>
+              <div>${agendamento.descricao}</div>
+              <div class="text-end mt-1">
+                <button class="btn btn-sm btn-danger" onclick="excluirAgenda('${key}')">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      });
+    });
+  }
+
+  document.getElementById("formFiltro").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const funcionario = document.getElementById("filtroFuncionario").value;
+    const inicio = formatarDataBR(document.getElementById("filtroInicio").value);
+    const fim = formatarDataBR(document.getElementById("filtroFim").value);
+    gerarSemana(funcionario, inicio, fim);
+    document.getElementById("btnLimparFiltro").style.display = "inline-block";
+    bootstrap.Modal.getInstance(document.getElementById("modalFiltro")).hide();
+  });
+
+  document.getElementById("btnLimparFiltro").addEventListener("click", () => {
+    gerarSemana();
+    document.getElementById("btnLimparFiltro").style.display = "none";
+  });
+
+  function atualizarGrafico(carga) {
+    const labels = Object.keys(carga);
+    const data = Object.values(carga);
+
+    if (grafico) grafico.destroy();
+
+    const ctx = document.getElementById("graficoCarga").getContext("2d");
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, "#6200ee");
+    gradient.addColorStop(1, "#bb86fc");
+
+    grafico = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Escalas por Dia",
+          data,
+          backgroundColor: gradient,
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: 32
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: {
+          duration: 1000,
+          easing: 'easeOutQuart'
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "#333",
+            titleFont: { weight: "bold", size: 14 },
+            bodyFont: { size: 13 },
+            cornerRadius: 8,
+            padding: 10
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { family: 'Roboto', size: 12, weight: '500' },
+              color: "#666"
+            }
+          },
+          y: {
+            grid: { color: "#e0e0e0" },
+            ticks: {
+              beginAtZero: true,
+              font: { family: 'Roboto', size: 12 },
+              color: "#666"
+            }
+          }
+        }
+      }
+    });
+  }
+
+  document.getElementById("formEscala").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const dataFormatada = formatarDataBR(document.getElementById("dataEscala").value);
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    const escala = {
+      funcionario: funcionarioSelect.options[funcionarioSelect.selectedIndex].text,
+      id_funcionario: funcionarioSelect.value,
+      data: dataFormatada,
+      hora_entrada: document.getElementById("horaEntrada").value,
+      hora_saida: document.getElementById("horaSaida").value,
+    };
+
+    push(ref(db, "escala"), escala).then(() => {
+      showToast("Escala registrada!");
+      document.getElementById("formEscala").reset();
+      bootstrap.Modal.getInstance(document.getElementById("modalEscala")).hide();
+    });
+  });
+
+  document.getElementById("formAgenda").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const dataFormatada = formatarDataBR(document.getElementById("dataAgenda").value);
+   const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    const agenda = {
+      funcionario: funcAgendaSelect.options[funcAgendaSelect.selectedIndex].text,
+      id_funcionario: funcAgendaSelect.value,
+      data: dataFormatada,
+      horario: document.getElementById("horarioAgenda").value,
+      descricao: document.getElementById("descricaoAgenda").value,
+    };
+
+    push(ref(db, "agendamentos"), agenda).then(() => {
+      showToast("Agendamento salvo!");
+      document.getElementById("formAgenda").reset();
+      bootstrap.Modal.getInstance(document.getElementById("modalAgenda")).hide();
+    });
+  });
+
+  window.excluirEscala = function (id) {
+    if (confirm("Deseja excluir esta escala?")) {
+      remove(ref(db, "escala/" + id)).then(() => {
+        showToast("Escala excluída!", "warning");
+      });
+    }
+  }
+
+  window.excluirAgenda = function (id) {
+    if (confirm("Deseja excluir este agendamento?")) {
+      remove(ref(db, "agendamentos/" + id)).then(() => {
+        showToast("Agendamento excluído!", "warning");
+      });
+    }
+  }
+
+function verificarPermissao(bloqueados = []) {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+  if (!usuario) {
+    alert("Você precisa estar logado.");
+    window.location.href = "index.html";
+    return false;
+  }
+
+  if (bloqueados.includes(usuario.cargo)) {
+    const btnEscala = document.querySelector('[data-bs-target="#modalEscala"]');
+    const btnAgenda = document.querySelector('[data-bs-target="#modalAgenda"]');
+
+    if (btnEscala) btnEscala.disabled = true;
+    if (btnAgenda) btnAgenda.disabled = true;
+
+    desabilitarBotoesExcluirDinamicamente();
+  }
+
+  return true;
+}
+
+function desabilitarBotoesExcluirDinamicamente() {
+  const observer = new MutationObserver(() => {
+    const botoes = document.querySelectorAll('.btn-danger');
+    if (botoes.length > 0) {
+      botoes.forEach(btn => btn.disabled = true);
+      observer.disconnect(); // para de observar após encontrar
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+const toggleBtn = document.getElementById('btnToggleTheme');
+  const iconeTema = document.getElementById('iconeTema');
+
+  function aplicarTema() {
+    const darkModeAtivo = localStorage.getItem('darkMode') === 'true';
+
+    if (darkModeAtivo) {
+      document.documentElement.classList.add('dark-mode');
+      iconeTema.textContent = "light_mode";
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+      iconeTema.textContent = "dark_mode";
+    }
+  };
+
+  toggleBtn.addEventListener('click', () => {
+    const darkModeAtivo = document.documentElement.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', darkModeAtivo);
+    iconeTema.textContent = darkModeAtivo ? "light_mode" : "dark_mode";
+  });
+
+aplicarTema();
+
+verificarPermissao(["Atendente", "Garçom", "Churrasqueiro", "Caixa"]);
+
+  carregarFuncionarios();
+  gerarSemana();
+</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

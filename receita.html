@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Financeira</title>
+    
+    <!-- Bootstrap e Material UI -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+  /* ================== VARIÁVEIS DE TEMA ================== */
+:root {
+  --bg-light: #FCF8F3;
+  --text-light: #1F3A4A;
+  --card-light: #FFFFFF;
+  --border-light: #E5E7EB;
+
+  --bg-dark: #111827;
+  --text-dark: #F9FAFB;
+  --card-dark: #1F2937;
+  --border-dark: #374151;
+
+  --primary-color: #028090;
+  --primary-hover: #026873;
+  --success-color: #10B981;
+  --warning-color: #F59E0B;
+  --danger-color: #EF4444;
+}
+
+
+/* ================== ESTILO BASE ================== */
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-light);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+  margin-top: 30px;
+}
+
+
+/* ================== BOTÕES ================== */
+.btn-primary {
+  background-color: var(--primary-color);
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.dark-mode .btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-hover);
+}
+
+.dark-mode .btn-warning {
+  background-color: var(--warning-color);
+  color: #000;
+  border: none;
+}
+
+.dark-mode .btn-danger {
+  background-color: var(--danger-color);
+  color: #fff;
+  border: none;
+}
+
+
+/* ================== BARRA DE FILTRO ================== */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+
+/* ================== CARTÕES ================== */
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-light);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode .card {
+  background-color: var(--card-dark);
+ color: #F9FAFB;
+}
+
+
+/* ================== TOAST ================== */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+}
+
+
+/* ================== TEMA ESCURO ================== */
+.dark-mode body {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+
+/* ================== TABELAS ================== */
+.table {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode .table {
+  color: var(--text-dark);
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+  background-color: #1e1e1e;
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(even) {
+  background-color: #2c2c2c;
+}
+
+
+/* ================== FORMULÁRIOS ================== */
+.dark-mode .form-control,
+.dark-mode select {
+  background-color: #1f2937;
+  color: var(--text-dark);
+  border-color: var(--border-dark);
+}
+
+.dark-mode .form-control::placeholder {
+  color: #9CA3AF;
+}
+
+.dark-mode .form-label {
+  color: var(--text-dark);
+}
+
+
+/* ================== MODAL (TEMA ESCURO) ================== */
+.dark-mode .modal-content {
+  background-color: var(--card-dark);
+  color: var(--text-dark);
+}
+
+.dark-mode .modal-header,
+.dark-mode .modal-body {
+  border-color: var(--border-dark);
+}
+
+
+/* ================== TOGGLE DE TEMA ================== */
+.theme-toggle {
+  position: fixed;
+  top: 90%;
+  right: 15px;
+  z-index: 9999;
+}
+
+.theme-toggle .btn {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode td {
+  background-color: black;
+  color: #F9FAFB;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode th {
+  background-color: black;
+  color: #F9FAFB;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<button id="btn-voltar" class="btn btn-outline-dark text-body me-3" onclick="window.history.back();">
+      <span class="material-symbols-outlined me-1">arrow_back</span> Voltar
+    </button>
+    <h2 class="text-center mb-4">Gestão de Lucros e Despesas</h2>
+
+<div class="theme-toggle">
+  <button class="btn" id="btnToggleTheme">
+    <span class="material-icons" id="iconeTema">dark_mode</span>
+  </button>
+</div>
+
+    <!-- Barra de filtros -->
+    <div class="filter-bar">
+        <input type="datetime-local" id="filtroDataInicio" class="form-control" placeholder="Data Início">
+        <input type="datetime-local" id="filtroDataFim" class="form-control" placeholder="Data Fim">
+        <select id="filtroTipo" class="form-control">
+            <option value="">Todos</option>
+            <option value="Receita">Receita</option>
+            <option value="Despesa">Despesa</option>
+        </select>
+        <input type="text" id="filtroCategoria" class="form-control" placeholder="Categoria">
+        <button class="btn btn-primary" onclick="filtrarRegistros()">
+            <span class="material-icons">search</span> Filtrar
+        </button>
+    </div>
+
+    <!-- Botão para adicionar transação -->
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalTransacao">
+        <span class="material-icons">add</span> Nova Transação
+    </button>
+
+<!-- KPIs Financeiros -->
+<div class="row g-3 mb-4" id="kpiContainer">
+  <div class="col-md-6 col-lg-3">
+    <div class="card text-center p-3">
+      <span class="material-symbols-outlined fs-1 text-primary">trending_up</span>
+      <h6 class="color-dark">Receita Total</h6>
+      <h5 id="kpiReceita">R$ 0,00</h5>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="card text-center p-3">
+      <span class="material-symbols-outlined fs-1 text-danger">trending_down</span>
+      <h6>Despesa Total</h6>
+      <h5 id="kpiDespesa">R$ 0,00</h5>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="card text-center p-3">
+      <span class="material-symbols-outlined fs-1 text-success">account_balance</span>
+      <h6>Lucro / Saldo</h6>
+      <h5 id="kpiLucro">R$ 0,00</h5>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-3">
+    <div class="card text-center p-3">
+      <span class="material-symbols-outlined fs-1 text-info">receipt_long</span>
+      <h6>Total de Lançamentos</h6>
+      <h5 id="kpiLancamentos">0</h5>
+    </div>
+  </div>
+  <div class="col-md-12 col-lg-6">
+    <div class="card text-center p-3">
+      <span class="material-symbols-outlined fs-1 text-warning">warning</span>
+      <h6>Maior Despesa do Mês</h6>
+      <h5 id="kpiMaiorDespesa">R$ 0,00</h5>
+    </div>
+  </div>
+</div>
+
+    <!-- Gráfico financeiro -->
+    <div class="card p-3">
+        <canvas id="graficoFinanceiro"></canvas>
+    </div>
+
+    <!-- Tabela de registros -->
+    <div class="card p-3 mt-3">
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+        <h5>Registros Financeiros</h5>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaRegistros"></tbody>
+        </table>
+ </div>
+  </div>
+</div>
+    </div>
+</div>
+
+<!-- Modal para adicionar transação -->
+<div class="modal fade" id="modalTransacao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nova Transação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formTransacao">
+                    <input type="hidden" id="idTransacao">
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="datetime-local" class="form-control" id="data" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-control" id="tipo" required>
+                            <option value="Receita">Receita</option>
+                            <option value="Despesa">Despesa</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Valor (R$)</label>
+                        <input type="text" class="form-control" id="valor" min="0" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categoria</label>
+                        <input type="text" class="form-control" id="categoria" required>
+                    </div>
+   <div class="mb-3">
+                        <label class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="descricao" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container">
+  <div id="toast" class="toast align-items-center bg-success text-white border-0 fade" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Sucesso!</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script type="module">
+  // ================== IMPORTAÇÃO DO FIREBASE ==================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    onValue,
+    remove
+  } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+  // ================== CONFIGURAÇÃO E INICIALIZAÇÃO ==================
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHVTY81_-m3ct_Yx7B9L4JyMxCFSH0isg",
+    authDomain: "pagina-de-avaliacao.firebaseapp.com",
+    databaseURL: "https://pagina-de-avaliacao-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "pagina-de-avaliacao",
+    storageBucket: "pagina-de-avaliacao.appspot.com",
+    messagingSenderId: "533323669910",
+    appId: "1:533323669910:web:4442513a47be857f097db7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const registrosRef = ref(db, "transacoes");
+
+  // ================== VERIFICAR CONEXÃO ==================
+  const statusRef = ref(db, ".info/connected");
+  onValue(statusRef, (snap) => {
+    const status = document.getElementById("statusConexao");
+    if (snap.val() === true) {
+      showToast("Conectado ao Firebase.");
+    } else {
+      showToast("Desconectado do Firebase.");
+    }
+  });
+
+  // ================== VARIÁVEL GLOBAL ==================
+  let registros = [];
+
+  // ================== FORMULÁRIO DE TRANSAÇÃO ==================
+
+  function formatarDataBR(dataStr) {
+    const data = new Date(dataStr);
+    return data.toLocaleDateString("pt-BR"); // dd/mm/aaaa
+  }
+
+  document.getElementById("formTransacao").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const id = document.getElementById("idTransacao").value;
+
+    const transacao = {
+      data: formatarDataBR(document.getElementById("data").value),
+      tipo: document.getElementById("tipo").value,
+      valor: parseFloat(document.getElementById('valor').value.trim().replace("R$", "").replace(",", ".")),
+      categoria: document.getElementById("categoria").value.trim().toLowerCase(),
+      descricao: document.getElementById("descricao").value
+    };
+
+    if (id) {
+      set(ref(db, "transacoes/" + id), transacao);
+    } else {
+      push(registrosRef, transacao);
+    }
+
+    document.getElementById("formTransacao").reset();
+    document.querySelector("#modalTransacao .btn-close").click();
+  });
+
+  // ================== CARREGAR DADOS DO FIREBASE ==================
+  function carregarRegistros() {
+    onValue(registrosRef, (snapshot) => {
+      registros = [];
+      snapshot.forEach((childSnapshot) => {
+        const id = childSnapshot.key;
+        const transacao = { id, ...childSnapshot.val() };
+        registros.push(transacao);
+      });
+      atualizarTabelaEGráfico(registros);
+      atualizarKPIs(registros);
+    });
+  }
+
+  // ================== ATUALIZAÇÃO DE TABELA E GRÁFICO ==================
+  function atualizarTabelaEGráfico(lista) {
+    const tabela = document.getElementById("tabelaRegistros");
+    tabela.innerHTML = "";
+    let receitas = 0, despesas = 0;
+
+    lista.forEach((transacao) => {
+      const linha = document.createElement("tr");
+
+      linha.innerHTML = `
+        <td>${transacao.data}</td>
+        <td>${transacao.tipo}</td>
+        <td>R$ ${transacao.valor.toFixed(2)}</td>
+        <td>${transacao.categoria}</td>
+        <td>${transacao.descricao}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="editarTransacao('${transacao.id}', '${transacao.data}', '${transacao.tipo}', '${transacao.valor}', '${transacao.categoria}', '${transacao.descricao}')">
+            <span class="material-icons">edit</span>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="excluirTransacao('${transacao.id}')">
+            <span class="material-icons">delete</span>
+          </button>
+        </td>
+      `;
+
+      tabela.appendChild(linha);
+
+      if (transacao.tipo === "Receita") receitas += transacao.valor;
+      else if (transacao.tipo === "Despesa") despesas += transacao.valor;
+    });
+
+    const lucros = receitas - despesas;
+    atualizarGrafico(receitas, despesas, lucros);
+  }
+
+  // ================== FILTRO ==================
+  window.filtrarRegistros = function () {
+    const dataInicio = formatarDataBR(document.getElementById("filtroDataInicio").value);
+    const dataFim = formatarDataBR(document.getElementById("filtroDataFim").value);
+    const tipo = document.getElementById("filtroTipo").value;
+    const categoria = document.getElementById("filtroCategoria").value.trim().toLowerCase();
+
+    const registrosFiltrados = registros.filter((transacao) => {
+      let passa = true;
+      if (dataInicio && transacao.data < dataInicio) passa = false;
+      if (dataFim && transacao.data > dataFim) passa = false;
+      if (tipo && transacao.tipo !== tipo) passa = false;
+      if (categoria && !transacao.categoria.includes(categoria)) passa = false;
+      return passa;
+    });
+
+    atualizarTabelaEGráfico(registrosFiltrados);
+    atualizarKPIs(registrosFiltrados);
+  };
+
+  // ================== EXCLUIR TRANSAÇÃO ==================
+  window.excluirTransacao = function (id) {
+    remove(ref(db, "transacoes/" + id));
+  };
+
+  // ================== EDITAR TRANSAÇÃO ==================
+  window.editarTransacao = function (id, data, tipo, valor, categoria, descricao) {
+    document.getElementById("idTransacao").value = id;
+    document.getElementById("data").value = data;
+    document.getElementById("tipo").value = tipo;
+    document.getElementById("valor").value = valor;
+    document.getElementById("categoria").value = categoria;
+    document.getElementById("descricao").value = descricao;
+
+    new bootstrap.Modal(document.getElementById("modalTransacao")).show();
+  };
+
+  // ================== ATUALIZAR GRÁFICO ==================
+  function atualizarGrafico(receitas, despesas, lucros) {
+    const ctx = document.getElementById("graficoFinanceiro").getContext("2d");
+
+    if (window.meuGrafico) {
+      window.meuGrafico.destroy();
+    }
+
+    window.meuGrafico = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Receitas", "Despesas", "Lucros"],
+        datasets: [{
+          label: "Valores em R$",
+          data: [receitas, despesas, lucros],
+          backgroundColor: [
+            "rgba(52, 152, 219, 0.8)",
+            "rgba(231, 76, 60, 0.8)",
+            "rgba(46, 204, 113, 0.8)"
+          ],
+          borderColor: [
+            "rgba(41, 128, 185, 1)",
+            "rgba(192, 57, 43, 1)",
+            "rgba(39, 174, 96, 1)"
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true },
+          tooltip: {
+            callbacks: {
+              label: function (tooltipItem) {
+                return `R$ ${tooltipItem.raw.toFixed(2)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function (value) {
+                return `R$ ${value}`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // ================== TEMA ESCURO/CLARO ==================
+  const toggleBtn = document.getElementById('btnToggleTheme');
+  const iconeTema = document.getElementById('iconeTema');
+
+  function aplicarTema() {
+    const darkModeAtivo = localStorage.getItem('darkMode') === 'true';
+    document.documentElement.classList.toggle('dark-mode', darkModeAtivo);
+    iconeTema.textContent = darkModeAtivo ? "light_mode" : "dark_mode";
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    const darkModeAtivo = document.documentElement.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', darkModeAtivo);
+    iconeTema.textContent = darkModeAtivo ? "light_mode" : "dark_mode";
+  });
+
+  // ================== MÁSCARA DE VALOR ==================
+  document.getElementById("valor").addEventListener("input", function (event) {
+    let value = event.target.value.replace(/\D/g, "");
+    value = (value / 100).toFixed(2).replace(".", ",");
+    event.target.value = "R$ " + value;
+  });
+
+  // ================== ATUALIZAÇÃO DE KPIs ==================
+  function atualizarKPIs(lista) {
+    let totalReceita = 0;
+    let totalDespesa = 0;
+    let maiorDespesa = 0;
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth();
+    const anoAtual = hoje.getFullYear();
+
+    lista.forEach((transacao) => {
+      const data = new Date(transacao.data);
+      if (transacao.tipo === "Receita") {
+        totalReceita += transacao.valor;
+      } else if (transacao.tipo === "Despesa") {
+        totalDespesa += transacao.valor;
+        if (data.getMonth() === mesAtual && data.getFullYear() === anoAtual && transacao.valor > maiorDespesa) {
+          maiorDespesa = transacao.valor;
+        }
+      }
+    });
+
+    const lucro = totalReceita - totalDespesa;
+
+    document.getElementById("kpiReceita").innerText = `R$ ${totalReceita.toFixed(2)}`;
+    document.getElementById("kpiDespesa").innerText = `R$ ${totalDespesa.toFixed(2)}`;
+    document.getElementById("kpiLucro").innerText = `R$ ${lucro.toFixed(2)}`;
+    document.getElementById("kpiLancamentos").innerText = lista.length;
+    document.getElementById("kpiMaiorDespesa").innerText = `R$ ${maiorDespesa.toFixed(2)}`;
+  }
+
+  // ================== EXIBIÇÃO DO TOAST ==================
+  const showToast = (msg) => {
+    document.getElementById("toastMsg").innerText = msg;
+    const toastElement = document.getElementById("toast");
+
+    if (toastElement) {
+      const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+      toast.show();
+    }
+  };
+
+  function verificarPermissao(bloqueados = []) {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+  if (!usuario) {
+    alert("Você precisa estar logado.");
+    window.location.href = "index.html";
+    return false;
+  }
+
+  if (bloqueados.includes(usuario.cargo)) {
+    alert("Acesso negado para seu cargo (" + usuario.cargo + ").");
+    window.location.href = "dashboard.html";
+    return false;
+  }
+
+  return true;
+}
+
+  // ================== INICIALIZAÇÃO ==================
+  aplicarTema();
+  carregarRegistros();
+  verificarPermissao(["Atendente", "Garçom", "Churrasqueiro", "Caixa"]);
+</script>
+</body>
+</html>

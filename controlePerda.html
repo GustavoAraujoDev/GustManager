@@ -1,0 +1,647 @@
+<!-- CONTROLE DE PERDAS - HTML COMPLETO COM VERIFICAÇÃO DE ESTOQUE -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Controle de Perdas | GustManager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+ <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+   :root {
+  /* Tema claro */
+  --bg-light: #FCF8F3;
+  --card-light: #FFFFFF;
+  --text-primary-light: #1F3A4A;
+  --text-secondary-light: #6B7280;
+  --primary-color: #028090;
+  --secondary-color: #02C39A;
+  --accent-color: #00A896;
+  --action-color: #F59E0B;
+  --success-color: #10B981;
+  --error-color: #EF4444;
+  --border-color: #E5E7EB;
+  --hover-bg: #E0F2F1;
+
+  /* Tema escuro */
+  --bg-dark: #111827;
+  --card-dark: #1F2937;
+  --text-primary-dark: #F9FAFB;
+  --text-secondary-dark: #9CA3AF;
+  --primary-color-dark: #00A896;
+  --secondary-color-dark: #02C39A;
+  --accent-color-dark: #028090;
+  --action-color-dark: #FBBF24;
+  --success-color-dark: #34D399;
+  --error-color-dark: #F87171;
+  --border-color-dark: #374151;
+  --hover-bg-dark: #1E3A3A;
+}
+
+body {
+  background-color: var(--bg-light);
+  color: var(--text-primary-light);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.card,
+.modal-content,
+.table,
+.form-control,
+.form-select {
+  background-color: var(--card-light) !important;
+  color: var(--text-primary-light) !important;
+  border: 1px solid var(--border-color);
+}
+
+.table-dark {
+  background-color: var(--card-dark) !important;
+  color: white;
+}
+
+.btn-toggle-theme {
+  background-color: transparent;
+  border: none;
+  color: var(--text-primary-light);
+  font-size: 1.5rem;
+  transition: color 0.3s;
+}
+
+.btn-toggle-theme:hover {
+  color: var(--primary-color);
+}
+
+.material-symbols-outlined {
+  vertical-align: middle;
+  font-size: 20px;
+}
+
+#toastContainer {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+}
+
+/* ==================== DARK MODE ==================== */
+.dark-mode body{
+  background-color: var(--bg-dark);
+  color: var(--text-primary-dark);
+}
+
+.dark-mode .card,
+.dark-mode .modal-content,
+.dark-mode .table,
+.dark-mode .form-control,
+.dark-mode .form-select {
+  background-color: var(--card-dark) !important;
+  color: var(--text-primary-dark) !important;
+  border: 1px solid var(--border-color-dark);
+}
+
+.dark-mode .btn-toggle-theme {
+  color: var(--text-primary-dark);
+}
+
+.dark-mode .btn-toggle-theme:hover {
+  color: var(--primary-color-dark);
+}
+
+.dark-mode #toastContainer {
+  background-color: var(--hover-bg-dark);
+  color: var(--text-primary-dark);
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 90%;
+  right: 15px;
+  z-index: 9999;
+}
+
+.theme-toggle .btn {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+  </style>
+</head>
+<body>
+
+<div class="theme-toggle">
+  <button class="btn" id="btnToggleTheme">
+    <span class="material-icons" id="iconeTema">dark_mode</span>
+  </button>
+</div>
+
+   <div class="container py-4">
+     <div class="row align-items-center mb-3 gy-2">
+    <!-- Botão Voltar -->
+    <div class="col-12 col-md-auto">
+      <button class="btn btn-light d-flex align-items-center gap-1" onclick="window.history.back()" style="border-radius: 8px;">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Voltar</span>
+      </button>
+    </div>
+
+    <!-- Título Central -->
+    <div class="col-12 col-md text-center text-md-start">
+      <h2 class="mb-0">Controle de Perdas</h2>
+    </div>
+
+    <!-- Botão Registrar Perda -->
+    <div class="col-12 col-md-auto text-md-end">
+      <button class="btn btn-danger w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#modalPerda">
+        <span class="material-symbols-outlined">delete</span> Registrar Perda
+      </button>
+    </div>
+  </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Buscar produto..." id="filtroProduto" />
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" id="filtroDataInicio" />
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" id="filtroDataFim" />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-secondary w-100" onclick="verificarEstoqueAntesDeFiltrar()">Filtrar</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Produto</th>
+            <th>Qtd</th>
+            <th>Unidade</th>
+            <th>Motivo</th>
+            <th>Data</th>
+            <th>Categoria</th>
+            <th>Responsável</th>
+            <th>Observações</th>
+            <th>Imagem</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="listaPerdas"></tbody>
+        <tfoot class="table-light fw-bold">
+          <tr>
+            <td colspan="7" class="text-end">Valor estimado perdido:</td>
+            <td id="valorTotal" class="text-danger">R$ 0,00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal de Perda -->
+<div class="modal fade" id="modalPerda" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formPerda" class="needs-validation" novalidate>
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">
+            <span class="material-symbols-outlined align-middle me-1">report_problem</span>
+            Registrar Perda
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Item -->
+            <div class="col-md-8">
+              <label for="produto" class="form-label">Item</label>
+              <select class="form-select" id="produto" required></select>
+              <div class="invalid-feedback">Informe o item.</div>
+              <div id="quantidadeDisponivel" class="form-text text-end small mt-1 text-muted"></div>
+            </div>
+
+            <!-- Unidade -->
+            <div class="col-md-4">
+              <label for="unidade" class="form-label">Unidade</label>
+              <select class="form-select" id="unidade" required>
+                <option value="">Escolher...</option>
+                <option value="un">Unidade</option>
+                <option value="kg">Kg</option>
+                <option value="g">Grama</option>
+                <option value="L">Litro</option>
+                <option value="ml">Mililitro</option>
+                <option value="cx">Caixa</option>
+                <option value="pç">Peça</option>
+                <option value="outros">Outros</option>
+              </select>
+              <div class="invalid-feedback">Selecione a unidade.</div>
+            </div>
+
+            <!-- Quantidade -->
+            <div class="col-md-4">
+              <label for="quantidade" class="form-label">Quantidade</label>
+              <div class="input-group">
+                <span class="input-group-text material-symbols-outlined">scale</span>
+                <input type="number" class="form-control" id="quantidade" required min="0.01" step="0.01">
+              </div>
+              <div class="invalid-feedback">Informe uma quantidade válida.</div>
+            </div>
+
+            <!-- Valor Estimado -->
+            <div class="col-md-4">
+              <label for="valorPerda" class="form-label">Valor Estimado (R$)</label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="number" class="form-control" id="valorPerda" min="0" step="0.01">
+              </div>
+            </div>
+
+            <!-- Data da Perda -->
+            <div class="col-md-4">
+              <label for="dataPerda" class="form-label">Data/Hora</label>
+              <input type="datetime-local" class="form-control" id="dataPerda" required>
+              <div class="invalid-feedback">Informe a data da perda.</div>
+            </div>
+
+            <!-- Categoria -->
+            <div class="col-md-6">
+              <label for="categoria" class="form-label">Categoria</label>
+              <select class="form-select" id="categoria">
+                <option value="">Selecionar...</option>
+                <option>Matéria-prima</option>
+                <option>Produto Final</option>
+                <option>Equipamento</option>
+                <option>Material de Escritório</option>
+                <option>Outros</option>
+              </select>
+            </div>
+
+            <!-- Motivo -->
+            <div class="col-md-6">
+              <label for="motivo" class="form-label">Motivo</label>
+              <select class="form-select" id="motivo" required>
+                <option value="">Selecionar...</option>
+                <option>Vencido</option>
+                <option>Danificado</option>
+                <option>Extravio</option>
+                <option>Erro Operacional</option>
+                <option>Cliente devolveu</option>
+                <option>Roubo/Furto</option>
+                <option>Outros</option>
+              </select>
+              <div class="invalid-feedback">Informe o motivo.</div>
+            </div>
+
+            <!-- Responsável -->
+            <div class="col-md-6">
+              <label for="responsavel" class="form-label">Responsável</label>
+              <select class="form-select" id="responsavel" required></select>
+              <div class="invalid-feedback">Informe quem registrou.</div>
+            </div>
+
+            <!-- Tipo de Registro -->
+            <div class="col-md-6">
+              <label for="tipoRegistro" class="form-label">Tipo de Registro</label>
+              <select class="form-select" id="tipoRegistro">
+                <option value="Manual">Manual</option>
+                <option value="Automático">Automático</option>
+              </select>
+            </div>
+
+            <!-- Observações -->
+            <div class="col-12">
+              <label for="observacoes" class="form-label">Observações</label>
+              <textarea class="form-control" id="observacoes" rows="2" placeholder="Ex: item danificado durante o transporte..."></textarea>
+            </div>
+
+            <!-- Imagem -->
+            <div class="col-12">
+              <label for="imagemPerda" class="form-label">Imagem (opcional)</label>
+              <input type="file" class="form-control" id="imagemPerda">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <span class="material-symbols-outlined align-middle">close</span> Cancelar
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <span class="material-symbols-outlined align-middle">save</span> Salvar Perda
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <div id="toastContainer"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHVTY81_-m3ct_Yx7B9L4JyMxCFSH0isg",
+      authDomain: "pagina-de-avaliacao.firebaseapp.com",
+      databaseURL: "https://pagina-de-avaliacao-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pagina-de-avaliacao",
+      storageBucket: "pagina-de-avaliacao.appspot.com",
+      messagingSenderId: "533323669910",
+      appId: "1:533323669910:web:4442513a47be857f097db7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let perdas = {}, estoque = {}, funcionarios = {};
+    let estoqueCarregado = false;
+const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    const listaPerdas = document.getElementById("listaPerdas");
+    const formPerda = document.getElementById("formPerda");
+    const valorTotal = document.getElementById("valorTotal");
+    const produtoSelect = document.getElementById("produto");
+    const responsavelSelect = document.getElementById("responsavel");
+    const quantidadeInput = document.getElementById("quantidade");
+    const quantidadeInfo = document.getElementById("quantidadeDisponivel");
+    const filtroProduto = document.getElementById("filtroProduto");
+    const filtroDataInicio = document.getElementById("filtroDataInicio");
+    const filtroDataFim = document.getElementById("filtroDataFim");
+
+    function carregarProdutos() {
+      onValue(ref(db, "estoque"), snapshot => { 
+        estoque = snapshot.val() || {};
+        estoqueCarregado = true;
+        produtoSelect.innerHTML = '<option value="">Escolha um produto</option>';
+        for (const id in estoque) {
+          const prod = estoque[id];
+          produtoSelect.innerHTML += `<option value="${id}">${prod.nome}</option>`;
+        }
+      });
+    };
+
+    function carregarFuncionarios() {
+      onValue(ref(db, "funcionarios"), snapshot => {
+        funcionarios = snapshot.val() || {};
+        const funcionariosFiltrados = filtrarPorUsuario(funcionarios);
+        responsavelSelect.innerHTML = '<option value="">Escolha um funcionário</option>';
+        for (const id in funcionariosFiltrados) {
+          const f = funcionariosFiltrados[id];
+          responsavelSelect.innerHTML += `<option>${f.nome}</option>`;
+        }
+      });
+    };
+
+    produtoSelect.addEventListener("change", () => {
+      const id = produtoSelect.value;
+      if (estoque[id]) {
+        quantidadeInfo.textContent = `Disponível: ${estoque[id].quantidade || 0} ${estoque[id].unidade}`;
+      } else {
+        quantidadeInfo.textContent = "";
+      }
+    });
+
+    formPerda.addEventListener("submit", (e) => {
+  e.preventDefault();
+  formPerda.classList.add("was-validated");
+  if (!formPerda.checkValidity()) return;
+
+  const produtoSelect = document.getElementById("produto");
+  const quantidadeInput = document.getElementById("quantidade");
+  const produtoId = produtoSelect.value;
+  const estoqueProduto = estoque?.[produtoId];
+
+  if (!estoqueProduto) {
+    showToast("Produto inválido ou não encontrado no estoque!", "danger");
+    return;
+  }
+
+  const produtoNome = estoqueProduto.nome;
+  const disponivel = parseFloat(estoqueProduto.quantidade || 0);
+  const quantidade = parseFloat(quantidadeInput.value);
+
+  if (isNaN(quantidade) || quantidade <= 0) {
+    showToast("Quantidade inválida!", "danger");
+    return;
+  }
+
+  if (quantidade > disponivel) {
+    showToast("Quantidade excede o disponível no estoque!", "danger");
+    return;
+  }
+
+  const dataOriginal = document.getElementById("dataPerda").value;
+  const dataObj = new Date(dataOriginal);
+  const dataFormatada = isNaN(dataObj) ? new Date().toLocaleString("pt-BR") : dataObj.toLocaleString("pt-BR");
+
+  const perda = {
+    produto: produtoNome,
+    produtoId,
+    idUsuario: usuario.id,
+    quantidade,
+    unidade: document.getElementById("unidade").value,
+    valor: parseFloat(document.getElementById("valorPerda").value || 0),
+    data: dataFormatada,
+    categoria: document.getElementById("categoria").value,
+    motivo: document.getElementById("motivo").value,
+    responsavel: document.getElementById("responsavel").value,
+    tipoRegistro: document.getElementById("tipoRegistro").value || "Manual",
+    observacoes: document.getElementById("observacoes").value.trim(),
+    imagem: document.getElementById("imagemPerda").value.trim()
+  };
+
+  push(ref(db, "perdas"), perda).then(() => {
+    const novaQtd = disponivel - quantidade;
+    update(ref(db, `estoque/${produtoId}`), { quantidade: novaQtd });
+
+    formPerda.reset();
+    formPerda.classList.remove("was-validated");
+    bootstrap.Modal.getInstance(document.getElementById("modalPerda")).hide();
+    showToast("Perda registrada com sucesso!", "success");
+  }).catch(() => {
+    showToast("Erro ao registrar perda.", "danger");
+  });
+});
+
+    function carregarPerdas() {
+      onValue(ref(db, "perdas"), snapshot => {
+        perdas = snapshot.val() || {};
+           // Filtra as perdas de acordo com o cargo do usuário
+    const perdasFiltradas = filtrarPorUsuario(perdas);
+        aplicarFiltro(perdasFiltradas);
+      });
+    }
+
+function filtrarPorUsuario(lista) {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+  if (!usuario || !usuario.cargo) {
+    showToast("Usuário não logado ou cargo indefinido.");
+    return {};
+  }
+
+  const cargosRestritos = ["atendente", "caixa", "garçom"];
+  const isRestrito = cargosRestritos.includes(usuario.cargo.toLowerCase());
+  const resultado = {};
+
+  for (const id in lista) {
+    const item = lista[id];
+
+    if (!item) continue;
+
+    const pertenceAoUsuario =
+      item.idUsuario === usuario.id || item.email === usuario.email;
+
+    if (!isRestrito || pertenceAoUsuario) {
+      resultado[id] = item;
+    }
+  }
+
+  return resultado;
+}
+
+    window.verificarEstoqueAntesDeFiltrar = (tentativas = 0) => {
+   const perdasFiltradas = filtrarPorUsuario(perdas);
+      if (estoqueCarregado) {
+        aplicarFiltro(perdasFiltradas);
+      } else if (tentativas < 5) {
+        setTimeout(() => verificarEstoqueAntesDeFiltrar(tentativas + 1), 300);
+      } else {
+        showToast("Ainda carregando os dados do estoque. Tente novamente.", "warning");
+      }
+    };
+
+    window.aplicarFiltro = (Perdas) => {
+      listaPerdas.innerHTML = "";
+      let total = 0;
+      const filtroNome = filtroProduto.value.toLowerCase();
+      const dataInicio = filtroDataInicio.value ? new Date(filtroDataInicio.value).toLocaleString("pt-BR") : null;
+      const dataFim = filtroDataFim.value ? new Date(filtroDataFim.value).toLocaleString("pt-BR") : null;
+
+      for (const id in Perdas) {
+        const p = Perdas[id];
+        const dataObj = new Date(p.data).toLocaleString("pt-BR");
+        const dataFormatada = dataObj.toLocaleString("pt-BR");
+
+        if (
+          (filtroNome && !p.produto.toLowerCase().includes(filtroNome)) ||
+          (dataInicio && dataObj < dataInicio) ||
+          (dataFim && dataObj > dataFim)
+        ) continue;
+
+        const valorEstimado = p.quantidade * (estoque[p.produtoId]?.precoVenda || 0);
+        total += valorEstimado;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.produto}</td>
+          <td>${p.quantidade}</td>
+          <td>${p.unidade}</td>
+          <td><span class="badge text-bg-danger">${p.motivo}</span></td>
+          <td>${dataFormatada}</td>
+          <td>${p.categoria}</td>
+          <td>${p.responsavel || "-"}</td>
+          <td>${p.observacoes || "-"}</td>
+<td>        ${p.imagem ? `<img src="${p.imagem}" alt="Imagem da perda" style="max-width: 60px; max-height: 60px; border-radius: 6px;">` : '<span class="text-muted">—</span>'}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-danger" onclick="excluirPerda('${id}', '${p.produtoId}', ${p.quantidade})">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </td>
+        `;
+        listaPerdas.appendChild(tr);
+      };
+
+      valorTotal.textContent = `R$ ${total.toFixed(2).replace(".", ",")}`;
+    }
+
+    window.excluirPerda = function(id, produtoId, qtd) {
+      if (confirm("Deseja realmente excluir esta perda?")) {
+        const estoqueAtual = parseFloat(estoque[produtoId]?.quantidade || 0);
+        remove(ref(db, "perdas/" + id)).then(() => {
+          update(ref(db, `estoque/${produtoId}`), { quantidade: estoqueAtual + qtd });
+          showToast("Perda excluída e estoque atualizado!", "success");
+        }).catch(() => showToast("Erro ao excluir perda.", "danger"));
+      }
+    }
+
+    function showToast(mensagem, tipo = "info") {
+      const id = "toast" + Date.now();
+      const toast = document.createElement("div");
+      toast.className = `toast align-items-center text-bg-${tipo} border-0`;
+      toast.setAttribute("role", "alert");
+      toast.setAttribute("aria-live", "assertive");
+      toast.setAttribute("aria-atomic", "true");
+      toast.id = id;
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${mensagem}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      document.getElementById("toastContainer").appendChild(toast);
+      const bsToast = new bootstrap.Toast(toast, { delay: 4000 });
+      bsToast.show();
+    }
+
+function alternarTema() {
+      const html = document.documentElement;
+      const temaAtual = html.getAttribute('data-theme');
+      const novoTema = temaAtual === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', novoTema);
+      localStorage.setItem('temaPreferido', novoTema);
+      document.querySelector('.btn-toggle-theme').textContent = novoTema === 'dark' ? 'light_mode' : 'dark_mode';
+    }
+
+    (function aplicarTemaSalvo() {
+      const temaSalvo = localStorage.getItem('temaPreferido') || 'light';
+      document.documentElement.setAttribute('data-theme', temaSalvo);
+      const icone = temaSalvo === 'dark' ? 'light_mode' : 'dark_mode';
+      window.addEventListener('DOMContentLoaded', () => {
+        const btn = document.querySelector('.btn-toggle-theme');
+        if (btn) btn.textContent = icone;
+      });
+    })();
+
+const toggleBtn = document.getElementById('btnToggleTheme');
+  const iconeTema = document.getElementById('iconeTema');
+
+  function aplicarTema() {
+    const darkModeAtivo = localStorage.getItem('darkMode') === 'true';
+
+    if (darkModeAtivo) {
+      document.documentElement.classList.add('dark-mode');
+      iconeTema.textContent = "light_mode";
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+      iconeTema.textContent = "dark_mode";
+    }
+  };
+
+  toggleBtn.addEventListener('click', () => {
+    const darkModeAtivo = document.documentElement.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', darkModeAtivo);
+    iconeTema.textContent = darkModeAtivo ? "light_mode" : "dark_mode";
+  });
+
+    aplicarTema();
+    carregarProdutos();
+    carregarFuncionarios();
+    carregarPerdas();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
